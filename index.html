@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.4.5.min.css">
+	<script src="phonegap.js"></script>
+	<script type="text/javascript" src="js/jquery.js"></script>	
+	<script type="text/javascript" src="js/jquery.mobile-1.4.5.min.js"></script>
+<script type="text/javascript">
+ var opciones;
+ opciones={maximumAge:500000,enableHighAccuracy:true,timeout:5000};
+
+document.addEventListener("deviceready", onDeviceReady, false);
+function onDeviceReady(){
+		/*******Evento para registrar servicios*********/
+		$("#btnGuardar").tap(function (){	
+			var nom=$("#Nombre").val();
+			var dir=$("#Direccion").val();
+			var rfc=$("#RFC").val();
+			var tel=$("#Telefono").val();
+			var clasif=$("#clasificacion").val();
+			var foto="img/fotos/foto1.jpg";
+			var lat=$("#latitud").val();
+			var longit=$("#longitud").val();
+			alert("Funciona guardar");								
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/Guardar.php",
+				data:"Nom="+nom+"&Dir="+dir+"&Rfc="+rfc+"&Tel="+tel+"&Clasif="+clasif+"&Foto="+foto+"&Lat="+lat+"&Long="+longit,
+				success:function (datos) {
+					alert("Datos guardados correctamente: "+datos);
+				}
+			});
+		});
+
+		/**********Evento para consulta*************/
+		$("#btnConsServ").tap(function (){
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/Consulta.php",
+				data:"",
+				success:function (datos) {
+					var reg=$.parseJSON(datos);
+					var fila=$("#datosTodos");
+					 for(var i in reg){
+					 	fila.append("<tr><td>"+reg[i].ID+"</td><td>"+reg[i].Nombre_servicio+"</td><td>"+reg[i].Direccion+"</td><td>"+reg[i].RFC+"</td><td>"+reg[i].Telefono+"</td><td>"+reg[i].Clasificacion+"</td><td>"+reg[i].Foto+"</td><td>"+reg[i].Latitud+"</td><td>"+reg[i].Longitud+"</td></tr>");
+					 }
+					$("#tb1").table("refresh");
+				}
+			});
+		});
+		/**********Evento para actualizar*************/
+		
+$("#btnActualizar").tap(function (){
+			/*alert=("funciona"); */
+			var id=$("#Act_id").val();
+			alert("ID seleccionado: "+id);		
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/Consulta.php",
+				data:"ID="+id,
+				success:function (datos) {					
+					var reg=$.parseJSON(datos);
+					alert(datos);
+					for(var i in reg){
+					$("#NombreA").val(reg[i].Nombre_servicio);
+					$("#DireccionA").val(reg[i].Direccion);
+					$("#RFCA").val(reg[i].RFC);
+					$("#TelefonoA").val(reg[i].Telefono);	
+					$("#clasificacion").val(reg[i].Clasificacion);
+					$("#btnFoto").val(reg[i].Foto);
+					$("#latitudA").val(reg[i].Latitud);
+					$("#longitudA").val(reg[i].Longitud);
+
+				}
+				}
+			});
+		});
+
+/*******Evento para Actualizar servicios*********/
+		$("#btnActualizar").tap(function (){	
+			var id=parseInt($("#Act_id").val());
+			var nom=$("#Nombre1").val();
+			var dir=$("#Direccion1").val();
+			var rfc=$("#RFC1").val();
+			var tel=$("#Telefono1").val();
+			var clasif=$("#clasificacion1").val();
+			var foto="img/fotos/foto1.jpg";
+			var lat=$("#latitud1").val();
+			var longit=$("#longitud1").val();
+			alert("Funciona actualizar");								
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/Actualizar.php",
+				data:"id="+id+"&Nom="+nom+"&Dir="+dir+"&Rfc="+rfc+"&Tel="+tel+"&Clasif="+clasif+"&Foto="+foto+"&Lat="+lat+"&Long="+longit,
+				success:function (datos) {
+					alert("Datos guardados correctamente: "+datos);
+				}
+			});
+		});
+
+
+		/**********Evento para consulta de Id*************/
+		$("#btnConsServID").tap(function (){
+			
+			var id=$("#S_id").val();
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/ConsultaID.php",
+				data:"ID="+id,
+				success:function (datos) {
+					var reg=$.parseJSON(datos);
+					var fila=$("#datosID");
+					 for(var i in reg){
+					 	fila.append("<tr><td>"+reg[i].ID+"</td><td>"+reg[i].Nombre_servicio+"</td><td>"+reg[i].Direccion+"</td><td>"+reg[i].RFC+"</td><td>"+reg[i].Telefono+"</td><td>"+reg[i].Clasificacion+"</td><td>"+reg[i].Foto+"</td><td>"+reg[i].Latitud+"</td><td>"+reg[i].Longitud+"</td></tr>");
+					 }
+					$("#tb2").table("refresh");
+				}
+			});
+		});
+
+		/**********Evento para borrar de Id*************/
+
+		$("#btnEliServID").tap(function (){
+			/*alert=("funciona"); */
+			var id=$("#E_id").val();
+			 alert("Dato eliminado: "+id);
+			$.ajax({
+				type:"POST",
+				url:"http://roma1723.esy.es/EliminarID.php",
+				data:"ID="+id,
+				success:function (datos) {
+					alert (datos);
+				}
+			});
+		});
+	/***********Obtener Coordenadas***********************/
+	$("#btnCords").tap(function(){//Obtener coordenadas para el registro de servicios			
+  		obtenerUbicacion();
+	});
+	$("#btnFoto").tap(function (){//Capturar fotografia
+        navigator.device.capture.captureImage(function(mediaFiles){
+		    path = mediaFiles[0].fullPath;
+		    $('#regFoto').append('<img id="imagen" src="'+path+'" width="100%" />').attr('rel',path);
+	      },function(error){
+		        navigator.notification.alert('Error code: ' + error.code, null, 'Capture Error');
+	      },{limit:1});
+	    /*navigator.camera.getPicture(onSuccess, onFail, { quality: 50,
+    	destinationType: Camera.DestinationType.FILE_URI });
+
+		function onSuccess(imageURI) {
+   			$('#regFoto').append('<img id="imagen" src="'+imageURI+'" width="100%" />').attr('rel',imageURI);
+		}
+
+		function onFail(message) {
+    		alert('Fallo al obtener la foto: ' + message);
+		}*/
+  	});
+}
+	function obtenerUbicacion(){//Funcion que obtiene la Ubicación del dispositivo móvil
+    if(navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(exito, falla, opciones);
+
+	  function exito(posic){
+	      //var corUbic=new google.maps.LatLng(posic.coords.latitude, posic.coords.longitude);
+	      $("#latitud").val(posic.coords.latitude);
+	      $("#longitud").val(posic.coords.longitude);	      
+	     }
+
+	      function falla(error){
+	         alert("Error en el servicio Geolocalizador: "+error.code+" detalle: "+error.response);
+	      }
+	  }else{
+	      alert("Su dispositivo no soporta la geolocalización o no esta habilitada esta funcionalidad");
+	  }
+    }
+</script>
+	<style type="text/css">
+		p{
+			text-align: center;
+		}
+		#Conocenos{
+			background-color: #F79F81;
+		}
+		#Variedad{
+			background-color: #F79F81;
+		}
+		#Principal{
+			background-color: #FFBF00; 
+		}
+		.colorVerde{
+			font-size: 30px;
+		}
+		.colorAzul{
+			color: #00BFFF;
+		}
+		}
+	</style>
+</head>
+<body>
+
+	<div data-role="page" id="Principal" data-theme="b"> 
+		<div data-role="header">
+
+			<header id="head">
+
+
+	
+</header>
+<content>
+
+	<img src="C:\Users\ROM\Desktop\LOGOS ACABADOS\TERCERO.PNG " alt="LOGO SANTA RITA" width="40%"
+	height="30%">
+
+<p class="colorVerde">Menú principal</p>
+<img src="C:\Users\ROM\Desktop\LOGOS ACABADOS\TERCERO.PNG " alt="LOGO SANTA RITA" width="40%"
+	height="30%">
+		</div>	
+		<div data-role="content">
+			<ul data-role="listview">
+				
+				<li><a href="#Conocenos">Conocenos</a></li>
+				<li><a href="#Variedad">Variedad de productos</a></li>
+				<li><a href="#Registrar">Registrate como vendedor</a></li>	
+				<li><a href="#Consultar">Conoce tu ID y tus socios</a></li>
+				<li><a href="#Chatear">Haz tu pedido</a></li>
+				<li><a href="#Actualizar">Actualiza tu informacion</a></li>
+				<li><a href="#EliminaID">Eliminar agente por ID</a></li>
+				<li><a href="#Empresa">Contacto de la empresa</a></li>
+				<!--<li><a href="#ConsultaID">Consultar Servicios por ID</a></li>-->
+				<li><a href="#Contacto">Datos del equipo</a></li>
+
+			</ul>	
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+
+		</div>
+	</div>
+
+	<div data-role="page" id="Conocenos">
+		<div data-role="header">
+		<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+			
+		</div>	
+		<div data-role="content">
+			<h1>MISIÓN</h1>
+			<article><p>
+				Procesar y comercializar productos lácteos y sus derivados cumpliendo con las normas y estándares de calidad para satisfacer las necesidades de los consumidores, respetando al medio ambiente y contribuyendo al desarrollo de región.
+			</p></article>
+			<h1>VISIÓN</h1>
+			<article><p>
+				Ser la empresa número uno en la región en calidad e innovación de quesos y sus derivados, teniendo una amplia gama de productos, respaldados por certificaciones internacionales para satisfacer las necesidades de nuestros consumidores.
+			</p></article>
+			<h1>VALORES</h1>
+			<article><p>
+				Justicia: Conjunto de reglas establecidas en cada sociedad, con las que se logra la cordial convivencia, respetando los derechos iguales de los demás seres humanos. Esto se logra autorizando, permitiendo o prohibiendo acciones específicas que pueden afectar o beneficiar al colectivo social.
+			</p></article>
+			<article><p>
+				Pertenencia: Valor en el que se considera a cada uno de los miembros de nuestra comunidad o grupo como familia y por tanto junto con esa persona se asume y afrontan sus triunfos y desgracias. La Pertenencia no se infiere, se siente.
+			</p></article>
+			<article><p>
+					Respeto: Es reconocer los derechos iguales de todos los individuos  así como de la sociedad en que vivimos. El respeto consiste en aceptar y comprender las diferentes formas de actuar y pensar de otro ser humano, siempre y cuando no contravengan ninguna norma o derecho fundamental. Respetar a otra persona es ponerse en su lugar, tratar de entender que es lo que lo motiva y en base a eso ayudarlo si fuera el caso.
+			</p></article>
+			<article><p>
+				Honestidad: Se define como una característica humana que establece al individuo conducirse en sinceridad y justicia, expresar respeto por uno mismo así como sus acciones y  respetar a los demás.
+			</p></article>
+			<article><p>
+				Lealtad: Característica que conlleva al ser humano a ser fiel y agradecido a una persona o entidad, la lealtad consiste en nunca abandonar o dejar a su suerte a una persona, grupo social o país. Lo contrario a lealtad es traición, nunca traicionar a una persona o nación es ser leal.
+			</p></article>
+			<article><p>
+				Humildad: La humildad consiste en aceptarnos tal como somos, con defectos y virtudes, sin hacer alarde de nuestras posesiones materiales o de gran conocimiento intelectual, para ser humilde no se puede ser pretensioso, egoísta o interesado.
+			</p></article>
+
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Instagram</a>
+			</p>
+		</div>
+	</div>
+
+
+	<div data-role="page" id="Variedad">
+		<div data-role="header">
+		<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+			
+		</div>	
+		<div data-role="content">
+           <article><p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+	tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+	quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+	consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+	cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+	proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p></article>
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>
+	<div data-role="page" id="Registrar">
+		<div data-role="header">
+		<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+			
+			<p>Hoy tienes la oportunidad de unirte al mejor grupo de trabajo de la región como uno de nuestros agentes de ventas</p>
+		</div>	
+		<div data-role="content">
+			<input type="text" id="Nombre" placeholder="Escribe tu nombre">
+			<input type="text" id="Direccion" placeholder="Escribe tu dirección">
+			<p>Si necesitas facturar dejanos tu RFC </p>
+			<input type="text" id="RFC" placeholder="RFC">
+			<input type="text" id="Telefono" placeholder="Número de teléfono">
+			<!--select id="clasificacion">
+				<option value="Restaurante">Restaurante</option>
+				<option value="Zapateria">Zapatería</option>
+				<option value="Farmacia">Farmacia</option>
+			</select>
+			<input type="button" id="btnFoto" value="Tomar foto">
+			<div id="regFoto"></div>
+			<input type="button" id="btnCords" value="Obtener coordenadas">
+			<input type="text" id="latitud" placeholder="Latitud">
+			<input type="text" id="longitud" placeholder="Longitud">-->
+			<input type="button" id="btnGuardar" value="Guardar servicio">
+		</div>
+		<div data-role="footer">
+			
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>
+
+	<div data-role="page" id="ConsultaID"> 	      
+		<div data-role="header">
+			<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+		</div>	
+		<div data-role="content">
+			<input type="text" id="S_id" placeholder="Escribe el ID del servicio">
+			<input type="button" id="btnConsServID" value="Consultar Servicio">
+			<div>
+			<table data-role="table" data-mode="columntoggle" class="ui-responsive" id="tb2">
+				<thead id="datosID">
+					<tr>
+						<th data-priority="1">Id</th>
+						<th data-priority="2">Nombre</th>
+						<th data-priority="3">Direción</th>
+						<th data-priority="4">RFC</th>
+						<th data-priority="5">Tel:</th>
+						<!--th data-priority="6">Clasif</th>
+						<th data-priority="7">Foto</th>
+						<th data-priority="8">Lat</th>
+						<th data-priority="9">Long</th>-->
+					</tr>
+				</thead>				
+				<tbody id="datosID">
+				</tbody>
+			</table>
+			</div>
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>
+
+	<div data-role="page" id="Contacto">
+		<div data-role="header">
+		<a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Home</a>
+			<p>Contacto</p>
+		</div>	
+		<div data-role="content">
+			<p>Maria Fernanda Moreno Rechy</p>
+			<p>Lorena López Arellano</p>
+			<p>Teresa Ordaz Torres</p>
+			<p>Romario Lopez Martinez</p>
+			<p>Maria de Lourdes Garcia Cuellar</p>
+			
+
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>	
+
+	<div data-role="page" id="EliminaID"> 	      
+		<div data-role="header">
+			<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+		</div>	
+		<div data-role="content">
+			<input type="text" id="E_id" placeholder="Escribe el ID del servicio a Eliminar">
+			<input type="button" id="btnEliServID" value="Eliminar Servicio">
+			<div>
+			</div>
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>
+
+
+	<div data-role="page" id="Actualizar">
+		<div data-role="header">
+			<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+		</div>	
+		<div data-role="content">
+			<label for="idact">ID:</label>
+
+		    <input type="text" id="Act_id" >
+
+			<input type="text" id="Nombre1" placeholder="Escribe el nombres del servicio">
+			<input type="text" id="Direccion1" placeholder="Escribe la dirección">
+			<input type="text" id="RFC1" placeholder="Escribe el RFC">
+			<input type="text" id="Telefono1" placeholder="Escribe el número de teléfono">
+			<!--select id="clasificacion1">
+				<option value="Restaurante">Restaurante</option>
+				<option value="Zapateria">Zapatería</option>
+				<option value="Farmacia">Farmacia</option>
+			</select>
+			<input type="text" id="latitud1" placeholder="Latitud">
+			<input type="text" id="longitud1" placeholder="Longitud">-->
+			<input type="button" id="btnActualizar" value="Actualizar servicio">
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>	
+
+	<div data-role="page" id="Empresa">
+		<div data-role="header">
+
+		<a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Home</a>
+			<p>Contacto</p>
+		</div>	
+		<div data-role="content">
+			<p>Contactanos</p>
+			<br>
+			<p>Av. 20 de Noviembre #2 Santiago Xonacatlan, Cuyoaco, Puebla</p>
+			<p>Frente a la hacienda de Calderón</p>
+			<p>Via WhatsApp</p>
+			<p>2761071132</p>
+			<p>En las redes sociales</p>
+			<p>Facebook: Quesos Santa Rita</p>
+			<p>Twiter: Quesos Santa Rita</p>
+			<p>Nuestro Bloc</p>
+
+			
+
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>	
+
+
+	<div data-role="page" id="Consultar">
+		<div data-role="header">
+			<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+		</div>	
+		<div data-role="content">
+			<input type="button" id="btnConsServ" value="Consultar Todos los Servicios">
+			<div>
+			<table data-role="table" data-mode="columntoggle" class="ui-responsive" id="tb1">
+				<thead id="datosTodos">
+					<tr>
+						<th data-priority="1">Id</th>
+						<th data-priority="2">Nombre</th>
+						<th data-priority="3">Direción</th>
+						<th data-priority="4">RFC</th>
+						<th data-priority="5">Tel:</th>
+						<!--<th data-priority="6">Clasif</th>
+						<th data-priority="7">Foto</th>
+						<th data-priority="8">Lat</th>
+						<th data-priority="9">Long</th>-->
+					</tr>
+				</thead>				
+				<tbody id="datosTodos">
+				</tbody>
+			</table>
+			</div>
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Pagina de Santa Rita</a>
+			</p>
+		</div>
+	</div>
+	
+
+		<div data-role="page" id="Chatear">
+		<div data-role="header">
+		<p><a href="#Principal" class="ui-btn ui-icon-home ui-btn-icon-left">Regresar</a></p>
+			
+		</div>	
+		<div data-role="content">
+			<h1>Bienvenido</h1>
+            <input type="text" id="Nombre1" placeholder="Escribe el producto a solicitar">
+			<input type="text" id="Direccion1" placeholder="Numero de piezas a solicitar">
+		
+
+		</div>
+		<div data-role="footer">
+			<p>
+			<a href="https://www.facebook.com/Quesos-Santa-Rita-154647241732584/?fref=ts" class="ui-btn ui-icon-plus ui-btn-icon-top" >Facebook</a>
+			<a href="http://twitter.com/QuesosSanta" class="ui-btn ui-icon-plus ui-btn-icon-top" >Twitter</a>
+			<a href="http://instagram.com" class="ui-btn ui-icon-plus ui-btn-icon-top" >Instagram</a>
+			</p>
+		</div>
+	</div>
+	</div>
+
+</body>
+</html>
